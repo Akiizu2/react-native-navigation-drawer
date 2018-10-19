@@ -1,8 +1,8 @@
 {
   "name": "rn-standalone-navigation-drawer",
   "description": "React Native - Navigation Drawer Standalone version ",
-  "version": "0.0.2",
-  "main": "navigationDrawer/index.js",
+  "version": "0.0.3",
+  "main": "index.js",
   "repository": "https://github.com/Akiizu2/react-native-navigation-drawer",
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
@@ -10,16 +10,13 @@
   },
   "dependencies": {
     "events": "^3.0.0",
-    "react": "16.6.0-alpha.8af6728",
-    "react-native": "0.57.3",
-    "react-native-router-flux": "^4.0.5",
-    "react-navigation-drawer": "^0.5.0"
+    "react": "16.4.0",
+    "react-native": "0.55.4"
   },
   "devDependencies": {
     "babel-jest": "23.6.0",
-    "jest": "23.6.0",
-    "metro-react-native-babel-preset": "0.48.1",
-    "react-test-renderer": "16.6.0-alpha.8af6728"
+    "jest": "22.2.2",
+    "react-test-renderer": "16.4.0"
   },
   "jest": {
     "preset": "react-native"
