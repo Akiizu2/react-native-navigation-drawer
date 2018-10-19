@@ -8,35 +8,26 @@
 
 import React, { Component } from 'react';
 import {
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  PanResponder
 } from 'react-native';
-import { Router, Scene, Drawer } from 'react-native-router-flux'
 
-import NavigationDrawer from './navigationDrawer/NavigationDrawer'
-import { openDrawer, closeDrawer } from './navigationDrawer/navigaitionDrawerController'
-import Home from './Home'
-
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
-  android:
-    'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
-
+import NavigationDrawer, { Controller } from './navigationDrawer'
 
 export default class App extends Component {
 
   state = {
-    drawerStatus: true
+    drawerStatus: false
   }
 
   _onToggleDrawer = () => {
-    openDrawer()
+    Controller.openDrawer()
+  }
+
+  componentDidMount() {
+    Controller.setNavigationDrawerContentComponent(<View><Text>Test</Text></View>)
   }
 
   render() {
@@ -44,7 +35,7 @@ export default class App extends Component {
       <React.Fragment>
         <View style={styles.container}>
           <TouchableOpacity onPress={this._onToggleDrawer} >
-            <Text> Open Drawer</Text>
+            <Text>Open Drawer</Text>
           </TouchableOpacity>
         </View>
         <NavigationDrawer />

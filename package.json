@@ -1,7 +1,9 @@
 {
-  "name": "navigationDrawer",
-  "version": "0.0.1",
-  "private": true,
+  "name": "rn-standalone-navigation-drawer",
+  "description": "React Native - Navigation Drawer Standalone version ",
+  "version": "0.0.2",
+  "main": "navigationDrawer/index.js",
+  "repository": "https://github.com/Akiizu2/react-native-navigation-drawer",
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest"

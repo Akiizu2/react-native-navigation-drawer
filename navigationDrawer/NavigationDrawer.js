@@ -1,13 +1,17 @@
 import React, { Component } from 'react'
-
 import {
   Easing,
-  Text,
   PanResponder,
   Animated,
 } from 'react-native'
+import PropTypes from 'prop-types'
 
-import { controllerListener } from './navigaitionDrawerController'
+import {
+  controllerListener,
+  removeControllerListener,
+  setNavigationDrawerContentComponent,
+  ControllerType,
+} from './navigaitionDrawerController'
 import styles from './stylesheets/navigationDrawer'
 
 class NavigationDrawer extends Component {
@@ -18,13 +22,27 @@ class NavigationDrawer extends Component {
     verticalThreadhold: 200,
   }
 
-  state = {
-    drawerPositon: new Animated.Value(0),
-    isShowDrawer: true,
+  static propTypes = {
+    width: PropTypes.number,
+    horizontalThreadhold: PropTypes.number,
+    verticalThreadhold: PropTypes.number,
   }
 
+  state = {
+    drawerPositon: new Animated.Value(-this.props.width),
+    isShowDrawer: false,
+    contentComponent: null,
+  }
+
+  /**
+   * Flag
+   */
   isSwipingVertical = false
 
+  /**
+   * _panResponder
+   * @description -- panResponse Handler for Navigation Drawer Component
+   */
   _panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => true,
     onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
@@ -32,7 +50,8 @@ class NavigationDrawer extends Component {
     onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
     onPanResponderGrant: (evt, gestureState) => { },
     onPanResponderMove: (evt, gestureState) => {
-      const { width,
+      const {
+        width,
         horizontalThreadhold,
         verticalThreadhold
       } = this.props
@@ -43,14 +62,23 @@ class NavigationDrawer extends Component {
           duration: 100,
         }).start()
       } else {
+        const { isShowDrawer } = this.state
         const isHorizontalSwiping = (gestureState.dx > horizontalThreadhold || gestureState.dx < -horizontalThreadhold) && !this.isSwipingVertical
         if (isHorizontalSwiping) {
           const swiperDiff = gestureState.x0 + gestureState.dx
           const animatedPosition = swiperDiff - width
-          Animated.timing(this.state.drawerPositon, {
-            toValue: animatedPosition < 0 ? animatedPosition < -width ? -width : animatedPosition : 0,
-            duration: 1,
-          }).start()
+          if (isShowDrawer && gestureState.dx < 0)
+            Animated.timing(this.state.drawerPositon, {
+              toValue:
+                animatedPosition < 0
+                  ? (
+                    animatedPosition < -width
+                      ? -width
+                      : animatedPosition
+                  )
+                  : 0,
+              duration: 1,
+            }).start()
         }
       }
     },
@@ -58,14 +86,14 @@ class NavigationDrawer extends Component {
     onPanResponderRelease: (evt, gestureState) => {
       const { width, horizontalThreadhold } = this.props
       if (gestureState.dx === 0 && gestureState.x0 > width) {
-        this.closeDrawer()
+        this._closeDrawer()
       } else if (!this.isSwipingVertical) {
         const swiperDiff = gestureState.x0 + gestureState.dx
         const isSwiping = gestureState.dx > horizontalThreadhold || gestureState.dx < -horizontalThreadhold
         if (isSwiping && swiperDiff < (width / 2)) {
-          this.closeDrawer()
+          this._closeDrawer()
         } else {
-          this.openDrawer()
+          this._openDrawer()
         }
       }
       this.isSwipingVertical = false
@@ -74,7 +102,11 @@ class NavigationDrawer extends Component {
     onShouldBlockNativeResponder: (evt, gestureState) => true,
   });
 
-  openDrawer = () => {
+  /**
+   * _openDrawer
+   * @description -- open the drawer with animation
+   */
+  _openDrawer = () => {
     this.setState({ isShowDrawer: true }, () => {
       Animated.timing(this.state.drawerPositon, {
         toValue: 0,
@@ -84,7 +116,11 @@ class NavigationDrawer extends Component {
     })
   }
 
-  closeDrawer = () => {
+  /**
+   * _closeDrawer
+   * @description -- close the drawer with animation
+   */
+  _closeDrawer = () => {
     const { width } = this.props
     Animated.timing(this.state.drawerPositon, {
       toValue: -width,
@@ -93,14 +129,33 @@ class NavigationDrawer extends Component {
     }).start(() => this.setState({ isShowDrawer: false }))
   }
 
-  componentDidMount() {
-    controllerListener(isOpen => {
-      if (isOpen) {
-        this.openDrawer()
-      } else {
-        this.closeDrawer()
+  /**
+   * initializeNavigationDrawerController
+   * @description -- initial listener for navigation drawer's controller
+   */
+  initializeNavigationDrawerController = () => {
+    controllerListener(controller => {
+      if (controller.type === ControllerType.display) {
+        if (controller.status) {
+          this._openDrawer()
+        } else {
+          this._closeDrawer()
+        }
+      } else if (controller.type === ControllerType.setContent) {
+        this.setState({
+          contentComponent: controller.contentComponent
+        })
       }
     })
+  }
+
+  componentDidMount() {
+    this.initializeNavigationDrawerController()
+  }
+
+  componentWillUnmount() {
+    setNavigationDrawerContentComponent(null)
+    removeControllerListener()
   }
 
   render() {
@@ -118,9 +173,7 @@ class NavigationDrawer extends Component {
         style={styles.container} >
         <Animated.View style={[styles.backdrop, { opacity: opacityAnimated }]} />
         <Animated.View style={[styles.body, { left: this.state.drawerPositon }]}>
-          <Text>
-            Navigation Drawer
-          </Text>
+          {this.state.contentComponent}
         </Animated.View>
       </Animated.View>
     )
